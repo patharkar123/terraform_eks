@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  namespace: jenkins   # Set the deployment to be created in the jenkins namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+      label: devops   # Set the label as devops
+  template:
+    metadata:
+      labels:
+        app: jenkins
+        label: devops   # Set the label as devops
+    spec:
+      nodeSelector:
+        devops: "true"  # Ensure Jenkins is deployed on the labeled node with devops=true
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+        - name: jenkins-data
+          mountPath: /var/jenkins_home
+      volumes:
+      - name: jenkins-data
+        persistentVolumeClaim:
+          claimName: jenkins-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  namespace: jenkins   # Set the service to be created in the jenkins namespace
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: jenkins
+    label: devops   # Set the label as devops
