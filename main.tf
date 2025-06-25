@@ -61,3 +61,14 @@ module "eks" {
     local_file.eks_node_private_key
   ]
 }
+
+# Remote backend configuration
+terraform {
+  backend "s3" {
+    bucket         = "terraformcodeekssanket"  
+    key            = "state/terraform.tfstate"  
+    region         = "eu-west-1"                  
+    dynamodb_table = "terraform-lock-table"    
+    encrypt        = true                         
+  }
+}
